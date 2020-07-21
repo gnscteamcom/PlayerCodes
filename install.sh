@@ -2,6 +2,7 @@
 
 printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
  
+
 # Verifica sudo
 if command -V sudo > /dev/null 2>&1; then
     sudo_found="yes"
@@ -26,17 +27,4 @@ else
     fi
 fi
 
-apt update > /dev/null 2>&1 &
-apt upgrade > /dev/null 2>&1 &
 
-sleep 4 &
-PID=$!
-i=1
-sp="/-\|"
-echo -n 'Instalando  '
-while [ -d /proc/$PID ]
-do
-  sleep 1
-  printf "\b${sp:i++%${#sp}:1}"
-done
-printf "\n"
