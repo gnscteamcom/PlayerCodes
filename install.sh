@@ -41,6 +41,4 @@ ${sudo_cmd}systemctl start nginx
 ${sudo_cmd}systemctl enable nginx
 ${sudo_cmd}sed -i "2 s/nginx/www-data/" /etc/nginx/nginx.conf
 ${sudo_cmd}sed -i "3 s/1/$core/" /etc/nginx/nginx.conf
-${sudo_cmd}sed -i "31i\ \ \ \ server_tokens off;\\n\ \ \ \index index.php index.html index.htm default-zonimi.html" /etc/nginx/nginx.conf
-${sudo_cmd}sed -i "14i\ " /etc/nginx/nginx.conf
-${sudo_cmd}sed -i "15i\ \ \ \ \ \ \  index index.php index.html index.htm;" /etc/nginx/nginx.conf
+${sudo_cmd}sed -i "31i\ \ \ \ server_tokens off;\\n\\n\ \ \ \ index index.php index.html index.htm default-zonimi.html;\\n\\n\ \ \ \ location / {\\n\ \ \ \ \ \ \ \ try_files $uri $uri/ =404;\\n\ \ \ \ }\\n\\n\ \ \ \ location ~ /\.ht {\\n\ \ \ \ \ \ \ \ deny all;\\n\ \ \ \ }\\n\\n" /etc/nginx/nginx.conf
