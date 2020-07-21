@@ -1,8 +1,4 @@
 #!/bin/bash
-
-printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
- 
-
 # Verifica sudo
 if command -V sudo > /dev/null 2>&1; then
     sudo_found="yes"
@@ -27,4 +23,4 @@ else
     fi
 fi
 
-
+echo "work"
