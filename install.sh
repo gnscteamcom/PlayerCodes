@@ -43,4 +43,4 @@ ${sudo_cmd}sed -i "1 s/nginx/www-data/" /etc/nginx/nginx.conf
 ${sudo_cmd}sed -i "2 s/auto/$core/" /etc/nginx/nginx.conf
 ${sudo_cmd}sed -i "13i\ \ \ \ \ \ \  server_tokens off;" /etc/nginx/nginx.conf
 ${sudo_cmd}sed -i "14i\ " /etc/nginx/nginx.conf
-
+${sudo_cmd}sed -i "15i\ \ \ \ \ \ \  index index.php index.html index.htm;" /etc/nginx/nginx.conf
