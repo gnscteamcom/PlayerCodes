@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Documentation - APICodes CPanel</title>
+    <!-- Bootstrap Core CSS -->
+    <link href="./assets/css/bootstrap.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="./assets/css/custom.css" rel="stylesheet">
+    <!-- Legit Scrollbar CSS -->
+    <!-- <link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css"> -->
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+    <!-- Begin header -->
+    <header class="header">
+        <div class="container">
+            <h1>APICodes CPanel</h1>
+            <p class="lead">Documentation For APICodes CPanel Version 1.0</p>
+        </div>
+    </header>
+    <!-- End header -->
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="well">
+                    <h3>Thank You For Purchasing APICodes CPanel From Us!</h3>
+                    <p>
+                        If you have any questions that are beyond the scope of this help file, please email our support: 
+                        <a href="mailto:support@apicodes.com">support@apicodes.com</a>.
+                    </p>
+                    <a href="https://demo.apicodes.com/cpanel/?login=admin" target="_blank"><button type="button" class="btn btn-success">Try live demo</button></a>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="alert alert-danger">
+                    <p><strong>Note: </strong> Please don't share or resell for anyone, we need the funds to maintain, develop and support you in the future</a>.</p>
+                </div>
+            </div>
+
+        </div>
+    
+        <div  class="row">
+            <div class="col-md-12">
+                <div id="template-structure">
+                <h1>Installation instructions:</h1>
+                <hr>
+                <p><strong>Step 1:</strong> Open config.php. Then change the <code>$secret_key</code> to the key you want to log in to CPanel. By default is <code>admin</code>. Like this: <a href="https://demo.apicodes.com/cpanel/?login=admin" target="_blank">https://demo.apicodes.com/cpanel/?login=admin</a> (admin is the secret key).</p>
+                <p><center><img src="./assets/images/secret-key.png"></center></p>
+                <p><strong>Step 2:</strong> Just upload all the files in the <b>source_cpanel</b> folder onto your server for use. In case, you want to use <b>Google Drive</b> or <b>SoundCloud</b>. You will need additional setup. See the instructions below for know how to do that.</p>
+                <hr>
+                <h2>Google Drive Proxy setup:</h2>
+                <hr>
+                <p><b>Step 1:</b> You need a VPS / Server with <b><code>Ubuntu 18.04</code></b> installed.</p>
+                <p><b>Step 2:</b> Login to your VPS / Server. Then watch the video below to know how to setup Proxy Server.</p>
+                <center><iframe width="560" height="315" src="https://www.youtube.com/embed/TpEbcP4nT1w" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></center>
+<pre>
+<strong>Step 1:</strong> Upload LoadBalancer.zip and ProxyStream.zip onto /root/
+<strong>Step 2:</strong> Run the command bellow.
+
+apt-get update
+apt-get install unzip
+apt install nginx -y
+ufw allow 'Nginx HTTP'
+ufw allow 6666
+ufw allow 6868
+cd /root/
+unzip LoadBalancer.zip
+cd /root/LoadBalancer
+apt install npm -y
+apt-get install nodejs -y
+npm install pm2 -g
+cd /root/LoadBalancer/bin
+pm2 start www -i 0 --name LoadBalancer
+cd /root/
+unzip ProxyStream.zip
+cd /root/ProxyStream
+apt install npm -y
+apt-get install nodejs -y
+npm install pm2 -g
+cd /root/ProxyStream/bin
+pm2 start www -i 0 --name ProxyStream
+
+<strong>Step 3:</strong>
+
+/root/CodeFolder/models/CacheManager.js => CacheManager.KEY_ENCRYPT => Encryption key
+/root/CodeFolder/configs/servers.js => Domain configuration
+
+=> CodeFolder: LoadBalancer and ProxyStream
+
+<strong>Step 4: Nginx configuration</strong>
+
+upstream LoadBalancer {
+    server 127.0.0.1:6666;
+}
+upstream ProxyStream {
+    server 127.0.0.1:6868;
+}
+    
+server {
+    listen 80;
+    server_name proxy.yourdomain.com;
+    
+    location / {
+        proxy_pass http://LoadBalancer;
+        proxy_http_version 1.1;
+        proxy_send_timeout   600;
+        proxy_read_timeout   600;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+    
+server {
+    listen 80;
+    server_name sv1.yourdomain.com;
+    
+    location / {
+        proxy_pass http://ProxyStream;
+        proxy_http_version 1.1;
+        proxy_send_timeout   600;
+        proxy_read_timeout   600;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+<strong>Step 5: Point domain to IP.</strong>
+
+<img src="./assets/images/point-domain-to-ip.png">
+
+Done!
+
+<strong>***API Link:</strong> https://yourdomain.com/link/?driveId=0BwHxX3yoJoeuYzZlNm1jYVhwWWs
+
+<strong>***Note:</strong> If you change anything. Don't forget to run the command: pm2 restart all
+
+</pre>
+                <p><b>Step 3:</b> After setting up the Proxy Server. Go to <b>source_cpanel</b> edit <b>config.php</b>. Then, add your proxy domain that you installed in Step 2.</p>
+                <p><center><img src="./assets/images/proxy-domain.png"></center></p>
+                <hr>
+                <h2>SoundCloud setup:</h2>
+                <hr>
+                <p><b>Step 1:</b> Go to <a href="https://soundcloud.com/you/apps" target="_blank">https://soundcloud.com/you/apps</a>. Create an app, then copy Client ID.</p>
+                <p><center><img src="assets/images/client-id.png"></center></p>
+                <p><b>Step 2:</b> Go to <b>source_cpanel</b> edit <b>config.php</b>. Then, changes our default Client ID to your Client ID.</p>
+                <p><center><img src="assets/images/soundcloud-client-id.png"></center></p>
+                <hr>
+                <h1>How to change to JWPlayer 7 version?</h1>
+				<p><img src="./assets/images/change-jwplayer-version.png" alt="Change JWPlayer Version"></p>
+                <hr>
+				<p>By default, our script will use JWPlayer 8. But if you want to use JWPlayer 7. Just open <b>embed.php</b>. Then change:</p>
+				<p><code>&lt;script type=&quot;text/javascript&quot; src=&quot;https://ssl.p.jwpcdn.com/player/v/8.8.6/jwplayer.js&quot;&gt;&lt;/script&gt;</code></p>
+				<p><code>&lt;script type=&quot;text/javascript&quot;&gt;jwplayer.key=&quot;64HPbvSQorQcd52B8XFuhMtEoitbvY/EXJmMBfKcXZQU2Rnn&quot;;&lt;/script&gt;</code></p>
+				<p>to</p>
+				<p>
+				<p><code>&lt;script type=&quot;text/javascript&quot; src=&quot;https://ssl.p.jwpcdn.com/player/v/7.12.13/jwplayer.js&quot;&gt;&lt;/script&gt;</code></p>
+				<p><code>&lt;script type=&quot;text/javascript&quot;&gt;jwplayer.key=&quot;LgLP3h9VAPYU1gxeWx2Vb/JbPuUOH0omT0vj4qWYcpAYZmo2&quot;;&lt;/script&gt;</code></p>
+                
+				<hr>
+                <p>If you have any questions. Please don't forget contact with us via email: <a href="mailto:support@apicodes.com">support@apicodes.com</a>. Thanks for reading!</p>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <p class="text-center">Copyright 2020 © <a href="https://apicodes.com/" title="APICodes" target="_blank">APICodes</a>. All rights reserved.</p>
+</body>
+</html>

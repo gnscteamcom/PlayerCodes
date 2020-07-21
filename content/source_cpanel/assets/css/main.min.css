@@ -1,0 +1,90 @@
+body{
+	background: #f5f5f5;
+}
+
+.apicodes-box{
+	padding: 30px;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+}
+
+.mw-186{
+    max-width: 186px;
+}
+
+.bg-dark{
+	box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+	background: #222222 url(../images/pattern.png) !important;
+}
+
+.sites{
+	padding: 0 !important;
+}
+
+.footer-wrapper{
+    width: 100%;
+    position: relative;
+}
+
+.footer-wrapper div ul li{
+	color: #f1f1f1;
+}
+
+.absolute-footer {
+    color: rgba(0,0,0,0.5);
+    padding: 15px;
+    font-size: .9em;
+    color: #f1f1f1;
+    background-color: #222222;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+}
+
+.theme-explorer-fas .file-preview-frame{
+    margin: 10px 0;
+    padding: 10px 0 10px 0;
+}
+
+.font-weight-500{
+    font-weight: 500!important;
+}
+
+/* [type="file"] {
+  height: 0;
+  overflow: hidden;
+  width: 0;
+}
+
+[type="file"] + label {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    margin-bottom: 0;
+    min-height: 38px;
+    
+}
+
+#file{
+    line-height: normal;
+    font-family: none;
+    font-size: unset;
+}
+ */
+
