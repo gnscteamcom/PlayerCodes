@@ -41,12 +41,25 @@ ${sudo_cmd}apt install nginx
 ${sudo_cmd}systemctl start nginx
 ${sudo_cmd}systemctl enable nginx
 
+# Importa configurações base para o Nginx
 cd /tmp
 ${sudo_cmd}wget https://github.com/h5bp/server-configs-nginx/archive/3.2.0.zip
 ${sido_cmd}unzip 3.2.0.zip
 cd /tmp/server-configs-nginx-3.2.0
 mv /tmp/server-configs-nginx-3.2.0/h5bp /etc/nginx
 mv /tmp/server-configs-nginx-3.2.0/mime.types /etc/nginx
+
+# Corrige e adiciona diretivas ao nginx
+${sudo_cmd}sed -i "36 s/add_header/# add_header/" /etc/nginx/h5bp/security/strict-transport-security.conf
+${sudo_cmd}sed -i "38 s/# add_header/add_header/" /etc/nginx/h5bp/security/strict-transport-security.conf
+${sudo_cmd}echo "include h5bp/security/strict-transport-security.conf" >> /etc/nginx/h5bp/basic.conf
+${sudo_cmd}sed -i "28 s/add_header/# add_header/" /etc/nginx/h5bp/security/content-security-policy.conf
+${sudo_cmd}echo "add_header Content-Security-Policy \"upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https; style-src 'self'; img-src 'self'; script-src 'self'\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
+${sudo_cmd}echo "add_header Content-Security-Policy \"frame-ancestors zonimi.me *.zonimi.me;\";' >> /etc/nginx/h5bp/security/content-security-policy.conf
+${sudo_cmd}sed -i "23 s/add_header/# add_header/" /etc/nginx/h5bp/security/referrer-policy.conf
+${sudo_cmd}echo "add_header Referrer-Policy \"no-referrer-when-downgrade\";" >> /etc/nginx/h5bp/security/referrer-policy.conf
+${sudo_cmd}sed -i "38 s/add_header/# add_header/" /etc/nginx/h5bp/security/x-xss-protection.conf
+${sudo_cmd}echo "add_header X-XSS-Protection \"1; mode=block\";" >> /etc/nginx/h5bp/security/x-xss-protection.conf
 
 {  
   ${sudo_cmd}echo "# Configuration File - Nginx Server Configs"
@@ -151,6 +164,8 @@ mv /tmp/server-configs-nginx-3.2.0/mime.types /etc/nginx
   ${sudo_cmd}echo "}"
  } > /etc/nginx/nginx.conf
 
+mkdir /etc/nginx/ssl_certs
+cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/ssl_certs/exemplo.com.conf
 
 {
   ${sudo_cmd}echo "server {"
@@ -175,9 +190,14 @@ mv /tmp/server-configs-nginx-3.2.0/mime.types /etc/nginx
   ${sudo_cmd}echo "  # The host name to respond to"
   ${sudo_cmd}echo "  server_name example.com;"
   ${sudo_cmd}echo ""
+  ${sudo_cmd}echo "  # Use the command below to generate a Sha-256 signature for"
+  ${sudo_cmd}echo "  # the site certificate, and replace it in the header"
+  ${sudo_cmd}echo "  # openssl x509 -in PATH/CERT -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64"
+  ${sudo_cmd}echo "  # add_header Public-Key-Pins 'pin-sha256=\"RESULT_HERE\"; includeSubdomains; max-age=10';"
+  ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  include h5bp/ssl/ssl_engine.conf;"
-  ${sudo_cmd}echo "  include h5bp/ssl/certificate_files.conf;"
-  ${sudo_cmd}echo "  include h5bp/ssl/policy_intermediate.conf;"
+  ${sudo_cmd}echo "  include h5bp/ssl/policy_modern.conf;"
+  ${sudo_cmd}echo "  include h5bp/ssl/certificate_files_exemple.com.conf
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Path for static files"
   ${sudo_cmd}echo "  root /var/www/example.com/public;"
