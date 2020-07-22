@@ -50,18 +50,15 @@ mv /tmp/server-configs-nginx-3.2.0/h5bp /etc/nginx
 mv /tmp/server-configs-nginx-3.2.0/mime.types /etc/nginx
 
 # Corrige e adiciona diretivas ao nginx
-${sudo_cmd}sed -i "36 s/add_header/# add_header/" /etc/nginx/h5bp/security/strict-transport-security.conf
-${sudo_cmd}sed -i "38 s/# add_header/add_header/" /etc/nginx/h5bp/security/strict-transport-security.conf
-${sudo_cmd}echo "include h5bp/security/strict-transport-security.conf" >> /etc/nginx/h5bp/basic.conf
-${sudo_cmd}sed -i "28 s/add_header/# add_header/" /etc/nginx/h5bp/security/content-security-policy.conf
+${sudo_cmd}echo "include h5bp/security/strict-transport-security.conf;" >> /etc/nginx/h5bp/basic.conf
+${sudo_cmd}echo "include h5bp/ssl/ocsp_stapling.conf;" >> /etc/nginx/h5bp/basic.conf
 ${sudo_cmd}echo "add_header Content-Security-Policy \"upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https; style-src 'self'; img-src 'self'; script-src 'self'\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
-${sudo_cmd}echo "add_header Content-Security-Policy \"frame-ancestors zonimi.me *.zonimi.me;\";' >> /etc/nginx/h5bp/security/content-security-policy.conf
-${sudo_cmd}sed -i "23 s/add_header/# add_header/" /etc/nginx/h5bp/security/referrer-policy.conf
+${sudo_cmd}echo "add_header Content-Security-Policy \"frame-ancestors zonimi.me *.zonimi.me;\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
 ${sudo_cmd}echo "add_header Referrer-Policy \"no-referrer-when-downgrade\";" >> /etc/nginx/h5bp/security/referrer-policy.conf
-${sudo_cmd}sed -i "38 s/add_header/# add_header/" /etc/nginx/h5bp/security/x-xss-protection.conf
-${sudo_cmd}echo "add_header X-XSS-Protection \"1; mode=block\";" >> /etc/nginx/h5bp/security/x-xss-protection.conf
+${sudo_cmd}echo "add_header Feature-Policy \"geolocation 'none'; midi 'none'; notifications 'none'; push 'self'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; vibrate 'self'; fullscreen 'self'; payment 'self'\";" >> /etc/nginx/h5bp/security/referrer-policy.conf
 
-{  
+
+{
   ${sudo_cmd}echo "# Configuration File - Nginx Server Configs"
   ${sudo_cmd}echo "# https://nginx.org/en/docs/"
   ${sudo_cmd}echo ""
@@ -90,6 +87,7 @@ ${sudo_cmd}echo "add_header X-XSS-Protection \"1; mode=block\";" >> /etc/nginx/h
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Hide Nginx version information."
   ${sudo_cmd}echo "  include h5bp/security/server_software_information.conf;"
+  ${sudo_cmd}echo "  include h5bp/security/content-security-policy.conf;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Specify media (MIME) types for files."
   ${sudo_cmd}echo "  include h5bp/media_types/media_types.conf;"
@@ -164,13 +162,16 @@ ${sudo_cmd}echo "add_header X-XSS-Protection \"1; mode=block\";" >> /etc/nginx/h
   ${sudo_cmd}echo "}"
  } > /etc/nginx/nginx.conf
 
-mkdir /etc/nginx/ssl_certs
-cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/ssl_certs/exemplo.com.conf
-${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.crt/\/etc\/letsencrypt\/live\/test.zonimi.me\/fullchain.pem/g" /etc/nginx/ssl_certs/exemplo.com.conf
-${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.key/\/etc\/letsencrypt\/live\/test.zonimi.me\/privkey.pem/g" /etc/nginx/ssl_certs/exemplo.com.conf
+mkdir /etc/nginx/h5bp/ssl_certs
+cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
+${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.crt/\/etc\/letsencrypt\/live\/zonimi.me\/fullchain.pem/g" /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
+${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.key/\/etc\/letsencrypt\/live\/zonimi.me\/privkey.pem/g" /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
+${sudo_cmd}sed -i "s/# ssl_trusted_certificate/ssl_trusted_certificate/g" /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
+${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/zonimi.me\/chain.pem/g" /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
 
 cd /tmp
-openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 > key
+openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 > key_ssl_cat
+key_ssl=$(cat key_ssl_cat)
 
 {
   ${sudo_cmd}echo "server {"
@@ -197,10 +198,10 @@ openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noo
   ${sudo_cmd}echo "  # Use the command below to generate a Sha-256 signature for"
   ${sudo_cmd}echo "  # the site certificate, and replace it in the header"
   ${sudo_cmd}echo "  # openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64"
-  ${sudo_cmd}echo "  # add_header Public-Key-Pins 'pin-sha256=\"RESULT_HERE\"; includeSubdomains; max-age=10';"
+  ${sudo_cmd}echo "  add_header Public-Key-Pins 'pin-sha256=\"${key_ssl}\"; includeSubdomains; max-age=10';"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  include h5bp/ssl/ssl_engine.conf;"
-  ${sudo_cmd}echo "  include ssl_certs/exemplo.com.conf;"
+  ${sudo_cmd}echo "  include h5bp/ssl_certs/exemplo.com.conf;"
   ${sudo_cmd}echo "  include h5bp/ssl/policy_modern.conf;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Path for static files"
@@ -209,7 +210,18 @@ openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noo
   ${sudo_cmd}echo "  # Custom error pages"
   ${sudo_cmd}echo "  include h5bp/errors/custom_errors.conf;"
   ${sudo_cmd}echo ""
-  ${sudo_cmd}echo "  include h5bp/location/security_file_access.conf;"
-  ${sudo_cmd}echo "  include h5bp/cross-origin/requests.conf;"
+  ${sudo_cmd}echo "  # Include the basic h5bp config set"
+  ${sudo_cmd}echo "  include h5bp/basic.conf;"
   ${sudo_cmd}echo "}"
  } > /etc/nginx/conf.d/exemple.com.conf
+
+{
+#!/bin/bash                                                          
+                                                                     
+for i in {1..1}                                                      
+do                                                                   
+      openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 > key_ssl_cat
+      key_ssl=$(cat key_ssl_cat)
+      sed -i "25d"
+      sed -i "25i
+done
