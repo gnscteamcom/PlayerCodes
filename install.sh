@@ -24,6 +24,10 @@ else
     fi
 fi
 
+
+read -p "$(tput setaf 6)> $(tput setaf 7)Domain: $(tput setaf 6)" domain
+echo -n "$(tput setaf 7)"
+
 # Instala repositorios necessarios
 ${sudo_cmd}apt install sed
 ${sudo_cmd}apt install unzip
@@ -54,7 +58,7 @@ ${sudo_cmd}echo "include h5bp/security/strict-transport-security.conf;" >> /etc/
 ${sudo_cmd}echo "include h5bp/ssl/ocsp_stapling.conf;" >> /etc/nginx/h5bp/basic.conf
 ${sudo_cmd}echo "include h5bp/security/content-security-policy.conf;" >> /etc/nginx/h5bp/basic.conf
 ${sudo_cmd}echo "add_header Content-Security-Policy \"upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https; style-src 'self'; img-src 'self'; script-src 'self'\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
-${sudo_cmd}echo "add_header Content-Security-Policy \"frame-ancestors zonimi.me *.zonimi.me;\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
+${sudo_cmd}echo "add_header Content-Security-Policy \"frame-ancestors ${domain} *.${domain};\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
 ${sudo_cmd}echo "add_header Referrer-Policy \"no-referrer-when-downgrade\" always;" >> /etc/nginx/h5bp/security/referrer-policy.conf
 ${sudo_cmd}echo "add_header Feature-Policy \"geolocation 'none'; midi 'none'; notifications 'none'; push 'self'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; vibrate 'self'; fullscreen 'self'; payment 'self'\";" >> /etc/nginx/h5bp/security/referrer-policy.conf
 ${sudo_cmd}echo "fastcgi_hide_header X-Powered-By;" >> /etc/nginx/h5bp/security/server_software_information.conf
@@ -165,14 +169,14 @@ ${sudo_cmd}echo "fastcgi_hide_header X-Powered-By;" >> /etc/nginx/h5bp/security/
  } > /etc/nginx/nginx.conf
 
 mkdir /etc/nginx/h5bp/ssl_certs
-cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
-${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.crt/\/etc\/letsencrypt\/live\/zonimi.me\/fullchain.pem/g" /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
-${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.key/\/etc\/letsencrypt\/live\/zonimi.me\/privkey.pem/g" /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
-${sudo_cmd}sed -i "s/# ssl_trusted_certificate/ssl_trusted_certificate/g" /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
-${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/zonimi.me\/chain.pem/g" /etc/nginx/h5bp/ssl_certs/exemplo.com.conf
+cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/h5bp/ssl_certs/${domain}.conf
+${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.crt/\/etc\/letsencrypt\/live\/${domain}\/fullchain.pem/g" /etc/nginx/h5bp/ssl_certs/${domain}.conf
+${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.key/\/etc\/letsencrypt\/live\/${domain}\/privkey.pem/g" /etc/nginx/h5bp/ssl_certs/${domain}.conf
+${sudo_cmd}sed -i "s/# ssl_trusted_certificate/ssl_trusted_certificate/g" /etc/nginx/h5bp/ssl_certs/${domain}.conf
+${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/${domain}\/chain.pem/g" /etc/nginx/h5bp/ssl_certs/${domain}.conf
 
 # cd /tmp
-# openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 > key_ssl_cat
+# openssl x509 -in /etc/letsencrypt/live/${domain}/fullchain.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 > key_ssl_cat
 # key_ssl=$(cat key_ssl_cat)
 
 {
@@ -180,13 +184,13 @@ ${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/zonimi.me\/cha
   ${sudo_cmd}echo "  listen [::]:443 ssl http2;"
   ${sudo_cmd}echo "  listen 443 ssl http2;"
   ${sudo_cmd}echo ""
-  ${sudo_cmd}echo "  server_name www.example.com;"
+  ${sudo_cmd}echo "  server_name www.${domain};"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  include h5bp/ssl/ssl_engine.conf;"
-  ${sudo_cmd}echo "  include ssl_certs/exemplo.com.conf;"
+  ${sudo_cmd}echo "  include ssl_certs/${domain}.conf;"
   ${sudo_cmd}echo "  include h5bp/ssl/policy_modern.conf;"
   ${sudo_cmd}echo ""
-  ${sudo_cmd}echo "  return 301 \$scheme://example.com\$request_uri;"
+  ${sudo_cmd}echo "  return 301 \$scheme://${domain}\$request_uri;"
   ${sudo_cmd}echo "}"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo ""
@@ -195,7 +199,7 @@ ${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/zonimi.me\/cha
   ${sudo_cmd}echo "  listen 443 ssl http2;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # The host name to respond to"
-  ${sudo_cmd}echo "  server_name example.com;"
+  ${sudo_cmd}echo "  server_name ${domain};"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Enable HPKP (setting beta)"
   ${sudo_cmd}echo "  # (!) Not recommended"
@@ -203,11 +207,11 @@ ${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/zonimi.me\/cha
   ${sudo_cmd}echo "  # add_header Public-Key-Pins 'pin-sha256=\"${key_ssl}\"; includeSubdomains; max-age=10';"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  include h5bp/ssl/ssl_engine.conf;"
-  ${sudo_cmd}echo "  include h5bp/ssl_certs/exemplo.com.conf;"
+  ${sudo_cmd}echo "  include h5bp/ssl_certs/${domain}.conf;"
   ${sudo_cmd}echo "  include h5bp/ssl/policy_modern.conf;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Path for static files"
-  ${sudo_cmd}echo "  root /var/www/example.com/public;"
+  ${sudo_cmd}echo "  root /var/www/${domain}/public;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Custom error pages"
   ${sudo_cmd}echo "  include h5bp/errors/custom_errors.conf;"
@@ -215,7 +219,7 @@ ${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/zonimi.me\/cha
   ${sudo_cmd}echo "  # Include the basic h5bp config set"
   ${sudo_cmd}echo "  include h5bp/basic.conf;"
   ${sudo_cmd}echo "}"
- } > /etc/nginx/conf.d/exemple.com.conf
+ } > /etc/nginx/conf.d/${domain}.conf
 
 # {
 # #!/bin/bash                                                          
