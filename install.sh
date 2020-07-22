@@ -166,6 +166,11 @@ ${sudo_cmd}echo "add_header X-XSS-Protection \"1; mode=block\";" >> /etc/nginx/h
 
 mkdir /etc/nginx/ssl_certs
 cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/ssl_certs/exemplo.com.conf
+${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.crt/\/etc\/letsencrypt\/live\/test.zonimi.me\/fullchain.pem/g" /etc/nginx/ssl_certs/exemplo.com.conf
+${sudo_cmd}sed -i "s/\/etc\/nginx\/certs\/default.key/\/etc\/letsencrypt\/live\/test.zonimi.me\/privkey.pem/g" /etc/nginx/ssl_certs/exemplo.com.conf
+
+cd /tmp
+openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 > key
 
 {
   ${sudo_cmd}echo "server {"
@@ -175,11 +180,10 @@ cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/ssl_certs/exemplo.com.c
   ${sudo_cmd}echo "  server_name www.example.com;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  include h5bp/ssl/ssl_engine.conf;"
-  ${sudo_cmd}echo "  ssl_certificate /etc/letsencrypt/live/test.zonimi.me/fullchain.pem;"
-  ${sudo_cmd}echo "  ssl_certificate_key /etc/letsencrypt/live/test.zonimi.me/privkey.pem;"
+  ${sudo_cmd}echo "  include ssl_certs/exemplo.com.conf;"
   ${sudo_cmd}echo "  include h5bp/ssl/policy_modern.conf;"
   ${sudo_cmd}echo ""
-  ${sudo_cmd}echo "  return 301 \$scheme://example.com$request_uri;"
+  ${sudo_cmd}echo "  return 301 \$scheme://example.com\$request_uri;"
   ${sudo_cmd}echo "}"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo ""
@@ -192,12 +196,12 @@ cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/ssl_certs/exemplo.com.c
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Use the command below to generate a Sha-256 signature for"
   ${sudo_cmd}echo "  # the site certificate, and replace it in the header"
-  ${sudo_cmd}echo "  # openssl x509 -in PATH/CERT -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64"
+  ${sudo_cmd}echo "  # openssl x509 -in /etc/letsencrypt/live/test.zonimi.me/fullchain.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64"
   ${sudo_cmd}echo "  # add_header Public-Key-Pins 'pin-sha256=\"RESULT_HERE\"; includeSubdomains; max-age=10';"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  include h5bp/ssl/ssl_engine.conf;"
+  ${sudo_cmd}echo "  include ssl_certs/exemplo.com.conf;"
   ${sudo_cmd}echo "  include h5bp/ssl/policy_modern.conf;"
-  ${sudo_cmd}echo "  include h5bp/ssl/certificate_files_exemple.com.conf
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Path for static files"
   ${sudo_cmd}echo "  root /var/www/example.com/public;"
@@ -205,7 +209,7 @@ cp /etc/nginx/h5bp/ssl/certificate_files.conf /etc/nginx/ssl_certs/exemplo.com.c
   ${sudo_cmd}echo "  # Custom error pages"
   ${sudo_cmd}echo "  include h5bp/errors/custom_errors.conf;"
   ${sudo_cmd}echo ""
-  ${sudo_cmd}echo "  # Include the basic h5bp config set"
-  ${sudo_cmd}echo "  include h5bp/basic.conf;"
+  ${sudo_cmd}echo "  include h5bp/location/security_file_access.conf;"
+  ${sudo_cmd}echo "  include h5bp/cross-origin/requests.conf;"
   ${sudo_cmd}echo "}"
  } > /etc/nginx/conf.d/exemple.com.conf
