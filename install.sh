@@ -187,7 +187,7 @@ ${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/${domain}\/cha
   ${sudo_cmd}echo "  server_name www.${domain};"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  include h5bp/ssl/ssl_engine.conf;"
-  ${sudo_cmd}echo "  include ssl_certs/${domain}.conf;"
+  ${sudo_cmd}echo "  include h5bp/ssl_certs/${domain}.conf;"
   ${sudo_cmd}echo "  include h5bp/ssl/policy_modern.conf;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  return 301 \$scheme://${domain}\$request_uri;"
@@ -240,8 +240,8 @@ ${sudo_cmd}certbot --nginx --agree-tos -d ${domain_name} --email alex.zonimi@gma
 # }
 
 # Instala php-fpm
-apt install php-fpm
-apt install php-{bcmath,bz2,imap,intl,mbstring,mysqli,curl,zip,json,cli,gd,exif,xml}
+apt install php-fpm -y
+apt install php-{bcmath,bz2,imap,intl,mbstring,mysqli,curl,zip,json,cli,gd,exif,xml} -y
 
 # Oculta versão do php
 ${sudo_cmd}sed -i "s/expose_php = Off/expose_php = On/g" /etc/php/7.2/fpm/php.ini
