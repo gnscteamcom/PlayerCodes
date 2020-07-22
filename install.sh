@@ -221,6 +221,12 @@ ${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/${domain}\/cha
   ${sudo_cmd}echo "}"
  } > /etc/nginx/conf.d/${domain}.conf
 
+${sudo_cmd}apt install software-properties-common
+${sudo_cmd}echo -ne "\n" | add-apt-repository ppa:certbot/certbot
+${sudo_cmd}apt update && apt -y upgrade
+${sudo_cmd}apt -y install certbot python3-certbot-nginx
+${sudo_cmd}certbot --nginx --agree-tos -d ${domain_name} --email alex.zonimi@gmail.com --non-interactive
+
 # {
 # #!/bin/bash                                                          
 #                                                                      
@@ -240,3 +246,5 @@ apt install php-{bcmath,bz2,imap,intl,mbstring,mysqli,curl,zip,json,cli,gd,exif,
 # Oculta versão do php
 ${sudo_cmd}sed -i "s/expose_php = Off/expose_php = On/g" /etc/php/7.2/fpm/php.ini
 ${sudo_cmd}sed -i "s/expose_php = Off/expose_php = On/g" /etc/php/7.4/fpm/php.ini
+
+systemctl restart nginx
