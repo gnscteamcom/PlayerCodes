@@ -54,14 +54,29 @@ mv /tmp/server-configs-nginx-3.2.0/h5bp /etc/nginx
 mv /tmp/server-configs-nginx-3.2.0/mime.types /etc/nginx
 
 # Corrige e adiciona diretivas ao nginx
-${sudo_cmd}echo "include h5bp/security/strict-transport-security.conf;" >> /etc/nginx/h5bp/basic.conf
-${sudo_cmd}echo "include h5bp/ssl/ocsp_stapling.conf;" >> /etc/nginx/h5bp/basic.conf
-${sudo_cmd}echo "include h5bp/security/content-security-policy.conf;" >> /etc/nginx/h5bp/basic.conf
-${sudo_cmd}echo "add_header Content-Security-Policy \"upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https; style-src 'self'; img-src 'self'; script-src 'self'\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
-${sudo_cmd}echo "add_header Content-Security-Policy \"frame-ancestors ${domain} *.${domain};\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
-${sudo_cmd}echo "add_header Referrer-Policy \"no-referrer-when-downgrade\" always;" >> /etc/nginx/h5bp/security/referrer-policy.conf
-${sudo_cmd}echo "add_header Feature-Policy \"geolocation 'none'; midi 'none'; notifications 'none'; push 'self'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; vibrate 'self'; fullscreen 'self'; payment 'self'\";" >> /etc/nginx/h5bp/security/referrer-policy.conf
-${sudo_cmd}echo "fastcgi_hide_header X-Powered-By;" >> /etc/nginx/h5bp/security/server_software_information.conf
+# ${sudo_cmd}echo "include h5bp/security/strict-transport-security.conf;" >> /etc/nginx/h5bp/basic.conf
+# ${sudo_cmd}echo "include h5bp/ssl/ocsp_stapling.conf;" >> /etc/nginx/h5bp/basic.conf
+# ${sudo_cmd}echo "include h5bp/security/content-security-policy.conf;" >> /etc/nginx/h5bp/basic.conf
+# ${sudo_cmd}echo "add_header Content-Security-Policy \"upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https; style-src 'self'; img-src 'self'; script-src 'self'\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
+# ${sudo_cmd}echo "add_header Content-Security-Policy \"frame-ancestors ${domain} *.${domain};\";" >> /etc/nginx/h5bp/security/content-security-policy.conf
+# ${sudo_cmd}echo "add_header Referrer-Policy \"no-referrer-when-downgrade\" always;" >> /etc/nginx/h5bp/security/referrer-policy.conf
+# ${sudo_cmd}echo "add_header Feature-Policy \"geolocation 'none'; midi 'none'; notifications 'none'; push 'self'; sync-xhr 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; vibrate 'self'; fullscreen 'self'; payment 'self'\";" >> /etc/nginx/h5bp/security/referrer-policy.conf
+# ${sudo_cmd}echo "fastcgi_hide_header X-Powered-By;" >> /etc/nginx/h5bp/security/server_software_information.conf
+
+{
+  ${sudo_cmd}echo "# security headers"
+  ${sudo_cmd}echo "add_header X-Frame-Options           \"SAMEORIGIN\" always;"
+  ${sudo_cmd}echo "add_header X-XSS-Protection          \"1; mode=block\" always;"
+  ${sudo_cmd}echo "add_header X-Content-Type-Options    \"nosniff\" always;"
+  ${sudo_cmd}echo "add_header Referrer-Policy           \"no-referrer-when-downgrade\" always;"
+  ${sudo_cmd}echo "add_header Content-Security-Policy   \"default-src 'self' http: https: data: blob: 'unsafe-inline'\" always;"
+  ${sudo_cmd}echo "add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;"
+  ${sudo_cmd}echo ""
+  ${sudo_cmd}echo "# . files"
+  ${sudo_cmd}echo "location ~ /\.(?!well-known) {"
+  ${sudo_cmd}echo "    deny all;"
+  ${sudo_cmd}echo "}"
+ } > /etc/nginx/zonimi/security.conf
 
 {
   ${sudo_cmd}echo "# Configuration File - Nginx Server Configs"
@@ -91,8 +106,8 @@ ${sudo_cmd}echo "fastcgi_hide_header X-Powered-By;" >> /etc/nginx/h5bp/security/
   ${sudo_cmd}echo "http {"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Hide Nginx version information."
-  ${sudo_cmd}echo "  include h5bp/security/server_software_information.conf;"
-  ${sudo_cmd}echo "  include h5bp/security/content-security-policy.conf;"
+  ${sudo_cmd}echo "  # include h5bp/security/server_software_information.conf;"
+  ${sudo_cmd}echo "  # include h5bp/security/content-security-policy.conf;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Specify media (MIME) types for files."
   ${sudo_cmd}echo "  include h5bp/media_types/media_types.conf;"
@@ -162,7 +177,6 @@ ${sudo_cmd}echo "fastcgi_hide_header X-Powered-By;" >> /etc/nginx/h5bp/security/
   ${sudo_cmd}echo "    ~*application/font-woff2        \"*\";"
   ${sudo_cmd}echo "  }"
   ${sudo_cmd}echo ""
-  ${sudo_cmd}echo "  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem"
   ${sudo_cmd}echo "  include conf.d/*.conf;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "}"
@@ -201,11 +215,6 @@ ${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/${domain}\/cha
   ${sudo_cmd}echo "  # The host name to respond to"
   ${sudo_cmd}echo "  server_name ${domain};"
   ${sudo_cmd}echo ""
-  ${sudo_cmd}echo "  # Enable HPKP (setting beta)"
-  ${sudo_cmd}echo "  # (!) Not recommended"
-  ${sudo_cmd}echo "  # Use command: openssl x509 -in YOUR/PATH/CERT.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64"
-  ${sudo_cmd}echo "  # add_header Public-Key-Pins 'pin-sha256=\"${key_ssl}\"; includeSubdomains; max-age=10';"
-  ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  include h5bp/ssl/ssl_engine.conf;"
   ${sudo_cmd}echo "  include h5bp/ssl_certs/${domain}.conf;"
   ${sudo_cmd}echo "  include h5bp/ssl/policy_modern.conf;"
@@ -217,7 +226,7 @@ ${sudo_cmd}sed -i "s/\/path\/to\/ca.crt/\/etc\/letsencrypt\/live\/${domain}\/cha
   ${sudo_cmd}echo "  include h5bp/errors/custom_errors.conf;"
   ${sudo_cmd}echo ""
   ${sudo_cmd}echo "  # Include the basic h5bp config set"
-  ${sudo_cmd}echo "  include h5bp/basic.conf;"
+  ${sudo_cmd}echo "  # include h5bp/basic.conf;"
   ${sudo_cmd}echo "}"
  } > /etc/nginx/conf.d/${domain}.conf
 
@@ -225,7 +234,7 @@ ${sudo_cmd}apt install software-properties-common
 ${sudo_cmd}echo -ne "\n" | add-apt-repository ppa:certbot/certbot
 ${sudo_cmd}apt update && apt -y upgrade
 ${sudo_cmd}apt -y install certbot python3-certbot-nginx
-${sudo_cmd}certbot --nginx --agree-tos -d ${domain_name} --email alex.zonimi@gmail.com --non-interactive
+${sudo_cmd}certbot --nginx certonly --agree-tos -d ${domain_name},www.${Domain} --email alex.zonimi@gmail.com --non-interactive
 
 # {
 # #!/bin/bash                                                          
